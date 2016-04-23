@@ -1,4 +1,5 @@
 from deco import concurrent
+from multiprocessing import Pool
 
 class Body(object):
     def __init__(self, x, y, vx, vy, mass):
@@ -15,7 +16,15 @@ class Body(object):
     def distanceSquared(self, other):
         return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
-@concurrent(3)
+def Simulate(body_list, dt, iterations):
+    p = Pool(5)
+    next_body_list = {}
+    for i in body_list.keys():
+        p.apply_async(SimulateBody, [body_list, next_body_list, i, iterations, dt],
+            callback = lambda args: body_list.__setitem__(args[0], args[1]))
+    p.close()
+    p.join()
+
 def SimulateBody(body_list, next_body_list, index, iterations, dt):
     simulated_body = body_list[index]
     for _ in range(iterations):
@@ -30,11 +39,4 @@ def SimulateBody(body_list, next_body_list, index, iterations, dt):
             fx += (body.x - simulated_body.x) / d * f
             fy += (body.y - simulated_body.y) / d * f
         simulated_body.update(fx, fy, dt / iterations)
-    next_body_list[index] = simulated_body
-
-def Simulate(body_list, dt, iterations):
-    next_body_list = {}
-    for i in body_list.keys():
-        SimulateBody(body_list, next_body_list, i, iterations, dt)
-    SimulateBody.wait()
-    body_list.update(next_body_list)
+    return index, simulated_body

@@ -65,7 +65,7 @@ class concurrent(object):
         self.param_list = []
         self.workers = None
         self.manager = None
-        self.task_queues = [Pipe(False) for _ in range(self.processes)]
+        self.task_queues = [Pipe(True) for _ in range(self.processes)]
         self.qi = 0
         self.t3 = 0
         self.arg_proxies = {}
