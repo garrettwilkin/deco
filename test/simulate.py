@@ -21,9 +21,10 @@ def Simulate(body_list, dt, iterations):
     next_body_list = {}
     for i in body_list.keys():
         p.apply_async(SimulateBody, [body_list, next_body_list, i, iterations, dt],
-            callback = lambda args: body_list.__setitem__(args[0], args[1]))
+            callback = lambda args: next_body_list.__setitem__(args[0], args[1]))
     p.close()
     p.join()
+    body_list.update(next_body_list)
 
 def SimulateBody(body_list, next_body_list, index, iterations, dt):
     simulated_body = body_list[index]
